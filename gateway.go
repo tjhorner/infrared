@@ -9,6 +9,7 @@ import (
 	"github.com/haveachin/infrared/callback"
 	"github.com/haveachin/infrared/protocol/handshaking"
 	"github.com/pires/go-proxyproto"
+	"tailscale.com/tsnet"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -26,6 +27,7 @@ type Gateway struct {
 	ReceiveProxyProtocol bool
 	listeners            sync.Map
 	Proxies              sync.Map
+	TailscaleServer      *tsnet.Server
 	closed               chan bool
 	wg                   sync.WaitGroup
 }
@@ -135,7 +137,7 @@ func (gateway *Gateway) RegisterProxy(proxy *Proxy) error {
 	}
 
 	log.Println("Creating listener on", addr)
-	listener, err := Listen(addr)
+	listener, err := Listen(addr, gateway.TailscaleServer)
 	if err != nil {
 		return err
 	}

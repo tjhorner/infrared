@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/haveachin/infrared/api"
+	"tailscale.com/tsnet"
 
 	"github.com/haveachin/infrared"
 )
@@ -91,6 +92,17 @@ func main() {
 		return
 	}
 
+	tsrv := &tsnet.Server{
+		Hostname:  "minecraft-proxy",
+		Ephemeral: true,
+	}
+
+	err = tsrv.Start()
+	if err != nil {
+		log.Printf("Failed starting Tailscale server; error: %s", err)
+		return
+	}
+
 	var proxies []*infrared.Proxy
 	for _, cfg := range cfgs {
 		proxies = append(proxies, &infrared.Proxy{
@@ -106,7 +118,11 @@ func main() {
 		}
 	}()
 
-	gateway := infrared.Gateway{ReceiveProxyProtocol: receiveProxyProtocol}
+	gateway := infrared.Gateway{
+		ReceiveProxyProtocol: receiveProxyProtocol,
+		TailscaleServer:      tsrv,
+	}
+
 	go func() {
 		for {
 			cfg, ok := <-outCfgs

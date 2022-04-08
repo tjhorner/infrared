@@ -3,9 +3,11 @@ package infrared
 import (
 	"bufio"
 	"crypto/cipher"
-	"github.com/haveachin/infrared/protocol"
 	"io"
 	"net"
+
+	"github.com/haveachin/infrared/protocol"
+	"tailscale.com/tsnet"
 )
 
 type PacketWriter interface {
@@ -31,8 +33,8 @@ type Listener struct {
 	net.Listener
 }
 
-func Listen(addr string) (Listener, error) {
-	l, err := net.Listen("tcp", addr)
+func Listen(addr string, tsrv *tsnet.Server) (Listener, error) {
+	l, err := tsrv.Listen("tcp", addr)
 	return Listener{Listener: l}, err
 }
 
