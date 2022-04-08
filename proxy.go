@@ -372,21 +372,6 @@ func (proxy *Proxy) cancelProcessTimeout() {
 }
 
 func (proxy *Proxy) sniffUsername(conn, rconn Conn, connRemoteAddr net.Addr) (string, error) {
-	// whois, err := tailscale.WhoIs(context.Background(), connRemoteAddr.String())
-	// if err != nil {
-	// 	log.Printf("[w] Failed to get whois for %s; error: %s", connRemoteAddr, err)
-	// 	return "", err
-	// }
-
-	// name := whois.UserProfile.LoginName
-	// rconn.WritePacket(protocol.MarshalPacket(
-	// 	login.ServerBoundLoginStartPacketID,
-	// 	protocol.String(name),
-	// ))
-
-	// log.Printf("[i] %s with username %s connects through %s", connRemoteAddr, name, proxy.UID())
-	// return string(name), nil
-
 	pk, err := conn.ReadPacket()
 	if err != nil {
 		return "", err
@@ -398,19 +383,11 @@ func (proxy *Proxy) sniffUsername(conn, rconn Conn, connRemoteAddr net.Addr) (st
 		return "", err
 	}
 
-	fmt.Printf("%s\n", pk.Data)
-	fmt.Printf("%s\n", protocol.MarshalPacket(
-		login.ServerBoundLoginStartPacketID,
-		protocol.String("tjhorner"),
-	).Data)
-
 	name := whois.UserProfile.LoginName
 	rconn.WritePacket(protocol.MarshalPacket(
 		login.ServerBoundLoginStartPacketID,
 		protocol.String(name),
 	))
-
-	// rconn.WritePacket(pk)
 
 	_, err = login.UnmarshalServerBoundLoginStart(pk)
 	if err != nil {
